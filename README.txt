@@ -1,4 +1,6 @@
-1. Open __init__.py
+1. Run server.py
+
+1.5 Run client.py (x4)
 
 2. Run program.
 
