@@ -108,7 +108,7 @@ def threaded_client(connection):
                 turn %= 4
                 if turn == 0:
                     turn = 4
-                    
+
             reply = dumps(gameState) 
             connection.sendall(reply)
 

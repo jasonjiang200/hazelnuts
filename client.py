@@ -105,11 +105,12 @@ def playMode_mousePressed(app, event) -> None:
             return 0 # only click the rightmost card
 
     # # Attempts to pass
-    if isInside(event.x, event.y, app.width*0.9, app.height*0.9, app.width//10, app.height//12): # inside play button
-        ClientSocket.sendall(dumps(['pass']))
-        app.gameState = loads(ClientSocket.recv(2048))
-        app.hand = app.gameState[0][int(app.playerNumber) - 1]
-        app.playerTurn = int(app.gameState[1])
+    if isInside(event.x, event.y, app.width*0.9, app.height*0.9, app.width//10, app.height//12): # pass button clicked
+        if app.playerNumber == app.gameState[1]: # you can only pass on your turn
+            ClientSocket.sendall(dumps(['pass']))
+            app.gameState = loads(ClientSocket.recv(2048))
+            app.hand = app.gameState[0][int(app.playerNumber) - 1]
+            app.playerTurn = int(app.gameState[1])
 
     # # Attempts to play cards
     if isInside(event.x, event.y, app.width*0.9, app.height*4//5, app.width//10, app.height//12): # inside play button
@@ -134,6 +135,8 @@ def playMode_mousePressed(app, event) -> None:
         
 def playMode_timerFired(app) -> None:
     app.time += 1
+
+    # Update the screen every 1 second
     if app.time % 10 == 0:
         ClientSocket.sendall(dumps(['update']))
         data = (ClientSocket.recv(2048))
