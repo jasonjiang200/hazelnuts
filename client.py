@@ -28,6 +28,8 @@ class HazelnutsGame(TopLevelApp):
         app.gameState = None
         app.hand = []
         app.time = 0
+        app.cardBack = app.scaleImage(app.loadImage('cards/cardback.png'), 1/5)
+        app.backX, app.backY = app.cardBack.size
 
         #In order: start button, play cards button,
         app.buttonColors = ['orange', 'light green', 'tan']
@@ -37,10 +39,8 @@ class HazelnutsGame(TopLevelApp):
         
         
         # Deal out the cards 
-        # app.full_deck = []
         for suit in ['clubs', 'diamonds', 'hearts', 'spades']:
             for number in range(3, 16):
-                # app.full_deck.append([number, suit])
                 app.card = app.loadImage('cards/{}_of_{}.png'.format(number, suit))
                 app.cards.append(app.scaleImage(app.card, 1/6))
         app.cardx, app.cardy = app.cards[0].size[0], app.cards[0].size[1]
@@ -73,6 +73,11 @@ def startScreenMode_redrawAll(app, canvas) -> None:
     drawButton(canvas, app.width//2, app.height*4//5, app.width//8, app.height//12, app.buttonColors[0], 2, 'red')
     canvas.create_text(app.width//2, app.height*4//5, text = "Start Game!", font = f'Times {min(app.height, app.width)//30}')
 
+    
+
+##### ^^^^ START MODE ^^^^
+
+##### VVVVV PLAY MODE VVVVV
 
 def playMode_mouseMoved(app, event) -> None:
 
@@ -149,17 +154,32 @@ def playMode_mousePressed(app, event) -> None:
                     app.hand = app.gameState[0][int(app.playerNumber) - 1]
                     app.playerTurn = int(app.gameState[1])
 
+            ### Played a triple with nothing        
+            elif len(cards) == 3:
+                # cards are equal, playable, on a triple
+                if (cards[0][0] == cards[1][0] == cards[2][0]) and cards[0][0] > app.gameState[2] and app.gameState[5] in [None, 'triple']:
+                    typeOfPlay = 'triple'
+                    stack = cards[0][0] # can take from first card
+                    play = ["play", cards, stack, app.playerNumber, typeOfPlay]
+                    print(play)
+                    ClientSocket.sendall(dumps(play))
+
+                    # code to update with what comes back
+                    app.gameState = loads(ClientSocket.recv(2048))
+                    app.hand = app.gameState[0][int(app.playerNumber) - 1]
+                    app.playerTurn = int(app.gameState[1])
+            
+
 
         app.toggle = [0 for i in range(13)]
         
 def playMode_timerFired(app) -> None:
     app.time += 1
 
-    # Update the screen every 1 second
+    # Update the screen every 0.5 second
     if app.time % 5 == 0:
         ClientSocket.sendall(dumps(['update']))
         data = (ClientSocket.recv(2048))
-        print("!?{}!".format(data))
         if data != b'':
             data = loads(data)
             app.gameState = data
@@ -211,7 +231,17 @@ def playMode_redrawAll(app, canvas) -> None:
                                 app.height*0.5-app.cardy//2, 
                                 app.width//20*(i+3)+app.cardx*1.5, 
                                 app.height*0.5+app.cardy//2, width = 2)
+    #TODO: Show other player's card totals
+    canvas.create_image(app.backX, app.height//2, image=ImageTk.PhotoImage(app.cardBack))
+    canvas.create_text(app.backX, app.height//2, text = len(app.gameState[0][(app.playerNumber) % 4]), font = f'Arial {min(app.height, app.width)//20}', fill = "#00FF00")
 
+    canvas.create_image(app.width//2, app.backY, image=ImageTk.PhotoImage(app.cardBack))
+    canvas.create_text(app.width//2, app.backY, text = len(app.gameState[0][(app.playerNumber + 1) % 4]), font = f'Arial {min(app.height, app.width)//20}', fill = "#00FF00")
+    
+    canvas.create_image(app.width - app.backX, app.height//2, image=ImageTk.PhotoImage(app.cardBack))
+    canvas.create_text(app.width - app.backX, app.height//2, text = len(app.gameState[0][(app.playerNumber + 2) % 4]), font = f'Arial {min(app.height, app.width)//20}', fill = '#00FF00')
+
+    #TODO: show other black aces
 
 # if __name__ == '__main__':
 #   HazelnutsGame(width = 1792, height = 995)
