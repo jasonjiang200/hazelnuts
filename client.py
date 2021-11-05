@@ -111,33 +111,52 @@ def playMode_mousePressed(app, event) -> None:
             app.gameState = loads(ClientSocket.recv(2048))
             app.hand = app.gameState[0][int(app.playerNumber) - 1]
             app.playerTurn = int(app.gameState[1])
+        app.toggle = [0 for i in range(13)] # reset hand view
 
     # # Attempts to play cards
     if isInside(event.x, event.y, app.width*0.9, app.height*4//5, app.width//10, app.height//12): # inside play button
-        cards = []
-        for i in range(len(app.hand)):
-            if app.toggle[i]:
-                cards.append(app.hand[i])
-        
-    #     # Now check if the card set is playable
-    #     ##### Played a single
-        if len(cards) == 1: 
-            if cards[0][0] > app.gameState[2] and app.playerNumber == app.gameState[1]:
-                stack = cards[0][0]
-                play = ["play", cards, stack, app.playerNumber]
-                print(play)
-                ClientSocket.sendall(dumps(play))
-                app.gameState = loads(ClientSocket.recv(2048))
-                app.hand = app.gameState[0][int(app.playerNumber) - 1]
-                app.playerTurn = int(app.gameState[1])
+        if app.playerNumber == app.playerTurn: # it must be your turn
+            cards = []
+            for i in range(len(app.hand)):
+                if app.toggle[i]:
+                    cards.append(app.hand[i])
+            
+        #     # Now check if the card set is playable
+        #     ##### Played a single
+            if len(cards) == 1: 
+                if cards[0][0] > app.gameState[2] and app.gameState[5] in [None, 'single']:
+                    typeOfPlay = 'single'
+                    stack = cards[0][0]
+                    play = ["play", cards, stack, app.playerNumber, typeOfPlay]
+                    print(play)
+                    ClientSocket.sendall(dumps(play))
+                    app.gameState = loads(ClientSocket.recv(2048))
+                    app.hand = app.gameState[0][int(app.playerNumber) - 1]
+                    app.playerTurn = int(app.gameState[1])
 
-            app.toggle = [0 for i in range(13)]
+            ##### Played a pair
+            elif len(cards) == 2:
+                # cards are equal, playable, on a pair
+                if cards[0][0] == cards[1][0] and cards[0][0] > app.gameState[2] and app.gameState[5] in [None, 'pair']:
+                    typeOfPlay = 'pair'
+                    stack = cards[0][0] # can take from first card
+                    play = ["play", cards, stack, app.playerNumber, typeOfPlay]
+                    print(play)
+                    ClientSocket.sendall(dumps(play))
+
+                    # code to update with what comes back
+                    app.gameState = loads(ClientSocket.recv(2048))
+                    app.hand = app.gameState[0][int(app.playerNumber) - 1]
+                    app.playerTurn = int(app.gameState[1])
+
+
+        app.toggle = [0 for i in range(13)]
         
 def playMode_timerFired(app) -> None:
     app.time += 1
 
     # Update the screen every 1 second
-    if app.time % 10 == 0:
+    if app.time % 5 == 0:
         ClientSocket.sendall(dumps(['update']))
         data = (ClientSocket.recv(2048))
         print("!?{}!".format(data))

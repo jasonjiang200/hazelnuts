@@ -9,9 +9,13 @@ import time
 
 ##################################################^^^^^^^ Don't touch VVV
 connections = []
+threadCount = 0
+stack = 0
+stackCards = []
 gameState = []
 turn = 0
 consecutivePasses = 0
+typeOfPlay = None
 hands = []
 scores = [0, 0, 0, 0] # how many points
 full_deck = []
@@ -40,6 +44,7 @@ def startGame() -> list:
     global stack
     global stackCards
     global consecutivePasses
+    global typeOfPlay
     p1, p2, p3, p4 = [], [], [], []
     deal_seed = np.random.permutation(52)
     for i in range(13): 
@@ -64,13 +69,11 @@ def startGame() -> list:
     else:
         turn = 4
     print(hands)
-    return([hands, turn, stack, stackCards, consecutivePasses])
+    return([hands, turn, stack, stackCards, consecutivePasses, typeOfPlay])
 
 
 ########### What each player has
-threadCount = 0
-stack = 0
-stackCards = []
+
 
 def threaded_client(connection):
     global connections
@@ -80,6 +83,7 @@ def threaded_client(connection):
     global stackCards
     global hands
     global turn
+    global typeOfPlay
     connections.append(connection)
     connection.sendall(str.encode('{}'.format(threadCount)))
     while True:
@@ -103,6 +107,7 @@ def threaded_client(connection):
                 consecutivePasses = 0
                 stackCards = []
                 stack = 0
+                typeOfPlay = None
 
             # Go to next player
             turn += 1
@@ -110,7 +115,7 @@ def threaded_client(connection):
             if turn == 0:
                 turn = 4
 
-            gameState = [hands, turn, stack, stackCards, consecutivePasses] #Update for each new thing
+            gameState = [hands, turn, stack, stackCards, consecutivePasses, typeOfPlay] #Update for each new thing
             reply = dumps(gameState) 
             connection.sendall(reply)
 
@@ -134,7 +139,7 @@ def threaded_client(connection):
                 for card in cards:
                     hands[playerNumber - 1].remove(card) # remove every card played
                     stackCards.append(card) #add it to the stack
-                    stackCards = sorted(stackCards, key=lambda x: x[0])
+                stackCards = sorted(stackCards, key=lambda x: x[0])
 
                 # Go to next player
                 turn += 1
@@ -142,7 +147,8 @@ def threaded_client(connection):
                 if turn == 0:
                     turn = 4
 
-                gameState = [hands, turn, stack, stackCards, consecutivePasses] #Update for each new thing
+                typeOfPlay = data[4]
+                gameState = [hands, turn, stack, stackCards, consecutivePasses, typeOfPlay] #Update for each new thing
                 reply = dumps(gameState) 
                 connection.sendall(reply)
 
