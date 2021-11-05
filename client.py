@@ -106,7 +106,7 @@ def playMode_mousePressed(app, event) -> None:
 
     # # Attempts to pass
     if isInside(event.x, event.y, app.width*0.9, app.height*0.9, app.width//10, app.height//12): # pass button clicked
-        if app.playerNumber == app.gameState[1]: # you can only pass on your turn
+        if app.playerNumber == app.gameState[1] and app.gameState[2] != 0: # you can only pass on your turn, and when someone else has played
             ClientSocket.sendall(dumps(['pass']))
             app.gameState = loads(ClientSocket.recv(2048))
             app.hand = app.gameState[0][int(app.playerNumber) - 1]
@@ -150,6 +150,9 @@ def playMode_timerFired(app) -> None:
 def playMode_redrawAll(app, canvas) -> None: 
     # Show the player number
     canvas.create_text(40, 10, text = "Player {}".format(app.playerNumber), font = f'Times {min(app.height, app.width)//50}')
+
+    # Show turn 
+    canvas.create_text(app.width//2, 30, text = "Player {}'s turn!".format(app.playerTurn))
 
     # Show the hand
     for i, card in enumerate(app.hand):

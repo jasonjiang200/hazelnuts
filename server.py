@@ -77,6 +77,7 @@ def threaded_client(connection):
     global consecutivePasses
     global gameState
     global stack
+    global stackCards
     global hands
     global turn
     connections.append(connection)
@@ -104,11 +105,12 @@ def threaded_client(connection):
                 stack = 0
 
             # Go to next player
-                turn += 1
-                turn %= 4
-                if turn == 0:
-                    turn = 4
+            turn += 1
+            turn %= 4
+            if turn == 0:
+                turn = 4
 
+            gameState = [hands, turn, stack, stackCards, consecutivePasses] #Update for each new thing
             reply = dumps(gameState) 
             connection.sendall(reply)
 
