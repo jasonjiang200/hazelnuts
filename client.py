@@ -1,12 +1,11 @@
 import socket
 from cmu_112_graphics import *
-import numpy as np
 from buttons import *
 from pickle import dumps, loads
-import time
+
 
 ClientSocket = socket.socket()
-host = '127.0.0.1'
+host = socket.gethostbyname(socket.gethostname())
 port = 1233
 
 print('Waiting for connection')
@@ -60,9 +59,11 @@ def startScreenMode_mousePressed(app, event) -> None:
     '''Starts the game if button is pressed.'''
     if isInside(event.x, event.y, app.width//2, app.height*4//5, app.width//8, app.height//12):
         print(app.playerNumber)
-        ClientSocket.sendall(dumps(['Start{}'.format(app.playerNumber)]))
-        app.gameState = loads(ClientSocket.recv(2048))
-        app.hand = app.gameState[0][app.playerNumber - 1]
+        if app.gameState == None:
+            ClientSocket.sendall(dumps(['Start']))
+            app.gameState = loads(ClientSocket.recv(2048))
+            app.hand = app.gameState[0][app.playerNumber - 1]
+            app.playerTurn = int(app.gameState[1])
         
         app.mode = 'playMode'
             
@@ -78,6 +79,20 @@ def startScreenMode_redrawAll(app, canvas) -> None:
 ##### ^^^^ START MODE ^^^^
 
 ##### VVVVV PLAY MODE VVVVV
+
+def playMode_timerFired(app) -> None:
+    '''Update the game if it exists every 0.5s'''
+
+    app.time += 1
+    if app.time % 5 == 0:
+        if app.gameState == None:
+            ClientSocket.sendall(dumps(['update']))
+            data = (ClientSocket.recv(2048))
+            if data != b'':
+                data = loads(data)
+                app.gameState = data
+                app.hand = app.gameState[0][int(app.playerNumber) - 1]
+                app.playerTurn = int(app.gameState[1])  
 
 def playMode_mouseMoved(app, event) -> None:
     '''Change colors of buttons when hovering.'''
@@ -274,6 +289,22 @@ def playMode_mousePressed(app, event) -> None:
                         app.hand = app.gameState[0][int(app.playerNumber) - 1]
                         app.playerTurn = int(app.gameState[1])
 
+            elif len(cards) == 7:
+                # only straights
+                if ((cards[0][0]) == (cards[1][0] - 1) == (cards[2][0] - 2) == (cards[3][0] - 3) == (cards[4][0] - 4) == (cards[5][0] - 5) == (cards[6][0] - 6)) and (cards[6][0] != 16): # cant have 2 as part of the straight
+                    if cards[0][0] > app.gameState[2] and app.gameState[5] in [None, 'straight']:
+                        # 7 length straight
+                        typeOfPlay = 'straight'
+                        stack = cards[0][0] # can take from first card
+                        play = ["play", cards, stack, app.playerNumber, typeOfPlay]
+                        print(play)
+                        ClientSocket.sendall(dumps(play))
+                        # code to update with what comes back
+                        app.gameState = loads(ClientSocket.recv(2048))
+                        app.hand = app.gameState[0][int(app.playerNumber) - 1]
+                        app.playerTurn = int(app.gameState[1])
+
+
 
 
 
@@ -360,8 +391,6 @@ def playMode_redrawAll(app, canvas) -> None:
 
     #TODO: show other black aces
 
-# if __name__ == '__main__':
-#   HazelnutsGame(width = 1792, height = 995)
 ###############################################################
 
 

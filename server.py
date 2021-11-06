@@ -4,7 +4,9 @@ from _thread import *
 from cmu_112_graphics import *
 import numpy as np
 from pickle import dumps, loads
-import time
+
+
+
 
 
 ##################################################^^^^^^^ Don't touch VVV
@@ -24,7 +26,7 @@ for suit in ['clubs', 'diamonds', 'hearts', 'spades']:
         full_deck.append([number, suit])
 ######################## Sockets VVV
 ServerSocket = socket.socket()
-host = '127.0.0.1'
+host = socket.gethostbyname(socket.gethostname())
 port = 1233
 
 try:
@@ -32,7 +34,7 @@ try:
 except socket.error as e:
     print(str(e))
 
-print('Waitiing for a Connection..')
+print('Server waitiing for a Connection..')
 ServerSocket.listen(5)
 
 
@@ -119,17 +121,17 @@ def threaded_client(connection):
             reply = dumps(gameState) 
             connection.sendall(reply)
 
-        elif data[0] == "Start1" and threadCount == 4:
+        elif data[0] == "Start":
             print("ya")
             gameState = startGame()
             reply = dumps(gameState) 
             connection.sendall(reply)
 
-        elif data[0] in ["Start2", "Start3", "Start4"]:
-            print(gameState)
-            # time.sleep(1)
-            reply = dumps(gameState)
-            connection.sendall(reply)
+        # elif data[0] in ["Start2", "Start3", "Start4"]:
+        #     print(gameState)
+        #     # time.sleep(1)
+        #     reply = dumps(gameState)
+        #     connection.sendall(reply)
         else:
             if data[0] == 'play':
                 print("we're making a play!")
