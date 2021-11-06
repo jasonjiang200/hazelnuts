@@ -80,6 +80,7 @@ def startScreenMode_redrawAll(app, canvas) -> None:
 ##### VVVVV PLAY MODE VVVVV
 
 def playMode_mouseMoved(app, event) -> None:
+    '''Change colors of buttons when hovering.'''
 
     ### play button color
     if isInside(event.x, event.y, app.width*0.9, app.height*4//5, app.width//10, app.height//12):
@@ -125,6 +126,7 @@ def playMode_mousePressed(app, event) -> None:
             for i in range(len(app.hand)):
                 if app.toggle[i]:
                     cards.append(app.hand[i])
+            cards = sorted(cards, key=lambda x: x[0]) # sort the cards for easy comparison
             
         #     # Now check if the card set is playable
         #     ##### Played a single
@@ -169,14 +171,128 @@ def playMode_mousePressed(app, event) -> None:
                     app.hand = app.gameState[0][int(app.playerNumber) - 1]
                     app.playerTurn = int(app.gameState[1])
             
+            ### Bomb or triple with single
+            elif len(cards) == 4:
+
+                # Bomb: cards are equal, playable, on a anything
+                if (cards[0][0] == cards[1][0] == cards[2][0] == cards[3][0]):
+                    if app.gameState[5] == 'bomb': #last played was bomb
+                        if cards[0][0] > app.gameState[2]: # bigger bomb being played
+                            typeOfPlay = 'bomb'
+                            stack = cards[0][0] # can take from first card
+                            play = ["play", cards, stack, app.playerNumber, typeOfPlay]
+                            print(play)
+                            ClientSocket.sendall(dumps(play))
+                    else:
+                        typeOfPlay = 'bomb'
+                        stack = cards[0][0] # can take from first card
+                        play = ["play", cards, stack, app.playerNumber, typeOfPlay]
+                        print(play)
+                        ClientSocket.sendall(dumps(play))
+
+                    # code to update with what comes back
+                    app.gameState = loads(ClientSocket.recv(2048))
+                    app.hand = app.gameState[0][int(app.playerNumber) - 1]
+                    app.playerTurn = int(app.gameState[1])
+                
+                elif (cards[0][0] == cards[1][0] == cards[2][0]) or (cards[1][0] == cards[2][0] == cards[3][0]):
+                    # check a middle card in the sort, which is always part of the triple
+                    if cards[1][0] > app.gameState[2] and app.gameState[5] in [None, 'triple_with_single']:
+                        typeOfPlay = 'triple_with_single'
+                        stack = cards[0][0] # can take from second card, always part of the triple
+                        play = ["play", cards, stack, app.playerNumber, typeOfPlay]
+                        print(play)
+                        ClientSocket.sendall(dumps(play))
+                        # code to update with what comes back
+                        app.gameState = loads(ClientSocket.recv(2048))
+                        app.hand = app.gameState[0][int(app.playerNumber) - 1]
+                        app.playerTurn = int(app.gameState[1])
+
+            elif len(cards) == 5:
+                if ((cards[0][0] == cards[1][0] == cards[2][0]) and (cards[3][0] == cards[4][0])) or ((cards[2][0] == cards[3][0] == cards[4][0]) and (cards[0][0] == cards[1][0])):
+                    # triple with pair
+                    if cards[2][0] > app.gameState[2] and app.gameState[5] in [None, 'triple_with_pair']:
+                        typeOfPlay = 'triple_with_pair'
+                        stack = cards[2][0] # can take from third card, always part of the triple
+                        play = ["play", cards, stack, app.playerNumber, typeOfPlay]
+                        print(play)
+                        ClientSocket.sendall(dumps(play))
+                        # code to update with what comes back
+                        app.gameState = loads(ClientSocket.recv(2048))
+                        app.hand = app.gameState[0][int(app.playerNumber) - 1]
+                        app.playerTurn = int(app.gameState[1])
+
+                elif ((cards[0][0]) == (cards[1][0] - 1) == (cards[2][0] - 2) == (cards[3][0] - 3) == (cards[4][0] - 4)) and (cards[4][0] != 16): # cant have 2 as part of the straight
+                    if cards[0][0] > app.gameState[2] and app.gameState[5] in [None, 'straight']:
+                        # 5 length straight
+                        typeOfPlay = 'straight'
+                        stack = cards[0][0] # can take from first card
+                        play = ["play", cards, stack, app.playerNumber, typeOfPlay]
+                        print(play)
+                        ClientSocket.sendall(dumps(play))
+                        # code to update with what comes back
+                        app.gameState = loads(ClientSocket.recv(2048))
+                        app.hand = app.gameState[0][int(app.playerNumber) - 1]
+                        app.playerTurn = int(app.gameState[1])
+                        
+            elif len(cards) == 6:
+                if (cards[0][0] == cards[1][0]) and (cards[2][0] == cards[3][0]) and (cards[4][0] == cards[5][0]) and (cards[0][0] + 2 == cards[2][0] + 1 == cards[4][0]) and (cards[4][0] != 16):
+                    # pairs straight
+                    if cards[0][0] > app.gameState[2] and app.gameState[5] in [None, 'pairs_straight']:
+                        typeOfPlay = 'pairs_straight'
+                        stack = cards[0][0] # can take from first card
+                        play = ["play", cards, stack, app.playerNumber, typeOfPlay]
+                        print(play)
+                        ClientSocket.sendall(dumps(play))
+                        # code to update with what comes back
+                        app.gameState = loads(ClientSocket.recv(2048))
+                        app.hand = app.gameState[0][int(app.playerNumber) - 1]
+                        app.playerTurn = int(app.gameState[1])
+                
+                elif (cards[0][0] == cards[1][0] == cards[2][0]) and (cards[3][0] == cards[4][0] == cards[5][0]) and (cards[0][0] + 1 == cards[3][0]) and (cards[3][0] != 16):
+                    if cards[0][0] > app.gameState[2] and app.gameState[5] in [None, 'empty_airplane']:
+                        typeOfPlay = 'empty_airplane'
+                        stack = cards[0][0] # can take from first card
+                        play = ["play", cards, stack, app.playerNumber, typeOfPlay]
+                        print(play)
+                        ClientSocket.sendall(dumps(play))
+                        # code to update with what comes back
+                        app.gameState = loads(ClientSocket.recv(2048))
+                        app.hand = app.gameState[0][int(app.playerNumber) - 1]
+                        app.playerTurn = int(app.gameState[1])
+                
+                elif ((cards[0][0]) == (cards[1][0] - 1) == (cards[2][0] - 2) == (cards[3][0] - 3) == (cards[4][0] - 4) == (cards[5][0] - 5)) and (cards[5][0] != 16): # cant have 2 as part of the straight
+                    if cards[0][0] > app.gameState[2] and app.gameState[5] in [None, 'straight']:
+                        # 6 length straight
+                        typeOfPlay = 'straight'
+                        stack = cards[0][0] # can take from first card
+                        play = ["play", cards, stack, app.playerNumber, typeOfPlay]
+                        print(play)
+                        ClientSocket.sendall(dumps(play))
+                        # code to update with what comes back
+                        app.gameState = loads(ClientSocket.recv(2048))
+                        app.hand = app.gameState[0][int(app.playerNumber) - 1]
+                        app.playerTurn = int(app.gameState[1])
 
 
+
+
+
+
+
+
+
+
+
+
+
+        ## Unselect all cards no matter what
         app.toggle = [0 for i in range(13)]
-        
-def playMode_timerFired(app) -> None:
-    app.time += 1
 
-    # Update the screen every 0.5 second
+def playMode_timerFired(app) -> None:
+    '''Update the game every half a second'''
+
+    app.time += 1
     if app.time % 5 == 0:
         ClientSocket.sendall(dumps(['update']))
         data = (ClientSocket.recv(2048))
@@ -187,6 +303,7 @@ def playMode_timerFired(app) -> None:
             app.playerTurn = int(app.gameState[1])       
 
 def playMode_redrawAll(app, canvas) -> None: 
+    '''Redraw the board with the updated game.'''
     # Show the player number
     canvas.create_text(40, 10, text = "Player {}".format(app.playerNumber), font = f'Times {min(app.height, app.width)//50}')
 
@@ -231,7 +348,7 @@ def playMode_redrawAll(app, canvas) -> None:
                                 app.height*0.5-app.cardy//2, 
                                 app.width//20*(i+3)+app.cardx*1.5, 
                                 app.height*0.5+app.cardy//2, width = 2)
-    #TODO: Show other player's card totals
+    # Show other player's card totals
     canvas.create_image(app.backX, app.height//2, image=ImageTk.PhotoImage(app.cardBack))
     canvas.create_text(app.backX, app.height//2, text = len(app.gameState[0][(app.playerNumber) % 4]), font = f'Arial {min(app.height, app.width)//20}', fill = "#00FF00")
 
