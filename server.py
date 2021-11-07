@@ -47,6 +47,7 @@ def startGame() -> list:
     global stackCards
     global consecutivePasses
     global typeOfPlay
+    global scores
     p1, p2, p3, p4 = [], [], [], []
     deal_seed = np.random.permutation(52)
     for i in range(13): 
@@ -71,7 +72,7 @@ def startGame() -> list:
     else:
         turn = 4
     print(hands)
-    return([hands, turn, stack, stackCards, consecutivePasses, typeOfPlay])
+    return([hands, turn, stack, stackCards, consecutivePasses, typeOfPlay, scores])
 
 
 ########### What each player has
@@ -85,6 +86,7 @@ def threaded_client(connection):
     global stackCards
     global hands
     global turn
+    global scores
     global typeOfPlay
     connections.append(connection)
     connection.sendall(str.encode('{}'.format(threadCount)))
@@ -117,7 +119,7 @@ def threaded_client(connection):
             if turn == 0:
                 turn = 4
 
-            gameState = [hands, turn, stack, stackCards, consecutivePasses, typeOfPlay] #Update for each new thing
+            gameState = [hands, turn, stack, stackCards, consecutivePasses, typeOfPlay, scores] #Update for each new thing
             reply = dumps(gameState) 
             connection.sendall(reply)
 
@@ -150,7 +152,7 @@ def threaded_client(connection):
                     turn = 4
 
                 typeOfPlay = data[4]
-                gameState = [hands, turn, stack, stackCards, consecutivePasses, typeOfPlay] #Update for each new thing
+                gameState = [hands, turn, stack, stackCards, consecutivePasses, typeOfPlay, scores] #Update for each new thing
                 reply = dumps(gameState) 
                 connection.sendall(reply)
 

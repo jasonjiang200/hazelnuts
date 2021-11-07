@@ -44,6 +44,14 @@ class HazelnutsGame(TopLevelApp):
                 app.cards.append(app.scaleImage(app.card, 1/6))
         app.cardx, app.cardy = app.cards[0].size[0], app.cards[0].size[1]
         
+        ## Get game state
+
+        if app.gameState == None:
+            ClientSocket.sendall(dumps(['Start']))
+            app.gameState = loads(ClientSocket.recv(2048))
+            app.hand = app.gameState[0][app.playerNumber - 1]
+            app.playerTurn = int(app.gameState[1])
+
         # Initiate start screen
         
         app.mode = 'startScreenMode'
@@ -65,6 +73,7 @@ def startScreenMode_mousePressed(app, event) -> None:
             app.hand = app.gameState[0][app.playerNumber - 1]
             app.playerTurn = int(app.gameState[1])
         
+        
         app.mode = 'playMode'
             
             
@@ -72,8 +81,10 @@ def startScreenMode_mousePressed(app, event) -> None:
 def startScreenMode_redrawAll(app, canvas) -> None:
     canvas.create_text(app.width/2, app.height//5, text = "Welcome to Hazelnuts, Player {}!".format(app.playerNumber), font = f'Times {min(app.height, app.width)//20}')
     drawButton(canvas, app.width//2, app.height*4//5, app.width//8, app.height//12, app.buttonColors[0], 2, 'red')
-    canvas.create_text(app.width//2, app.height*4//5, text = "Start Game!", font = f'Times {min(app.height, app.width)//30}')
+    canvas.create_text(app.width//2, app.height*4//5, text = "Start Game!", font = f'Times {min(app.height, app.width)//24}')
 
+    ### TODO: Display scores (doesn't work yet because gameState doesnt exist at the first redraw all)
+    canvas.create_text(app.width//2, app.height*0.4, text = "Scores: {} - {} - {} - {}".format(app.gameState[6][0], app.gameState[6][1], app.gameState[6][2], app.gameState[6][3]))
     
 
 ##### ^^^^ START MODE ^^^^
