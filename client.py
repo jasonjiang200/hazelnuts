@@ -96,14 +96,14 @@ def playMode_timerFired(app) -> None:
 
     app.time += 1
     if app.time % 5 == 0:
-        if app.gameState == None:
-            ClientSocket.sendall(dumps(['update']))
-            data = (ClientSocket.recv(2048))
-            if data != b'':
-                data = loads(data)
-                app.gameState = data
-                app.hand = app.gameState[0][int(app.playerNumber) - 1]
-                app.playerTurn = int(app.gameState[1])  
+        ClientSocket.sendall(dumps(['update']))
+        data = (ClientSocket.recv(2048))
+        if data != b'':
+            data = loads(data)
+            app.gameState = data
+            app.hand = app.gameState[0][int(app.playerNumber) - 1]
+            app.playerTurn = int(app.gameState[1]) 
+         
 
 def playMode_mouseMoved(app, event) -> None:
     '''Change colors of buttons when hovering.'''
