@@ -24,33 +24,31 @@ class HazelnutsGame(TopLevelApp):
         ### Required variables
         app.playerNumber = int(playerNumber)
         app.playerTurn = 0
-        app.gameState = None
+        app.gameState = []
         app.hand = []
         app.time = 0
+        app.winner = None # who won the game
         app.cardBack = app.scaleImage(app.loadImage('cards/cardback.png'), 1/5)
         app.backX, app.backY = app.cardBack.size
 
-        #In order: start button, play cards button,
+        #In order: start button, play cards button, pass button
         app.buttonColors = ['orange', 'light green', 'tan']
-        # app.scores = [0, 0, 0, 0]
-        app.cards = []
         app.toggle = [0 for i in range(13)]
         
         
-        # Deal out the cards 
+        # Load the card images 
+        app.cards = []
         for suit in ['clubs', 'diamonds', 'hearts', 'spades']:
             for number in range(3, 16):
                 app.card = app.loadImage('cards/{}_of_{}.png'.format(number, suit))
                 app.cards.append(app.scaleImage(app.card, 1/6))
         app.cardx, app.cardy = app.cards[0].size[0], app.cards[0].size[1]
         
-        ## Get game state
-
-        if app.gameState == None:
-            ClientSocket.sendall(dumps(['Start']))
-            app.gameState = loads(ClientSocket.recv(2048))
-            app.hand = app.gameState[0][app.playerNumber - 1]
-            app.playerTurn = int(app.gameState[1])
+        # load a game on start
+        ClientSocket.sendall(dumps(['Start']))
+        app.gameState = loads(ClientSocket.recv(2048))
+        app.hand = app.gameState[0][app.playerNumber - 1]
+        app.playerTurn = int(app.gameState[1])
 
         # Initiate start screen
         
@@ -66,12 +64,16 @@ def startScreenMode_mouseMoved(app, event) -> None:
 def startScreenMode_mousePressed(app, event) -> None:
     '''Starts the game if button is pressed.'''
     if isInside(event.x, event.y, app.width//2, app.height*4//5, app.width//8, app.height//12):
-        print(app.playerNumber)
-        if app.gameState == None:
+
+        # for games, this button loads a game if needed
+        if app.gameState == []:
             ClientSocket.sendall(dumps(['Start']))
             app.gameState = loads(ClientSocket.recv(2048))
             app.hand = app.gameState[0][app.playerNumber - 1]
             app.playerTurn = int(app.gameState[1])
+
+            
+                
         
         
         app.mode = 'playMode'
@@ -83,11 +85,21 @@ def startScreenMode_redrawAll(app, canvas) -> None:
     drawButton(canvas, app.width//2, app.height*4//5, app.width//8, app.height//12, app.buttonColors[0], 2, 'red')
     canvas.create_text(app.width//2, app.height*4//5, text = "Start Game!", font = f'Times {min(app.height, app.width)//24}')
 
-    ### TODO: Display scores (doesn't work yet because gameState doesnt exist at the first redraw all)
-    canvas.create_text(app.width//2, app.height*0.4, text = "Scores: {} - {} - {} - {}".format(app.gameState[6][0], app.gameState[6][1], app.gameState[6][2], app.gameState[6][3]))
+    ### TODO: Move Displays scores to end mode
+    # canvas.create_text(app.width//2, app.height*0.4, text = "Scores: {} - {} - {} - {}".format(app.gameState[6][0], app.gameState[6][1], app.gameState[6][2], app.gameState[6][3]))
     
 
 ##### ^^^^ START MODE ^^^^
+
+#### END MODE VVVVVVVVV
+
+def endMode_redrawAll(app, canvas) -> None:
+    canvas.create_text(app.width//2, app.height//4, text = 'Round Over!', font = f'Times {min(app.height, app.width)//20}')
+    canvas.create_text(app.width//2, app.height//2, text = 'Winner: Player {}!'.format(app.winner))
+    canvas.create_text(app.width//2, app.height*3/4, text = "Scores: {} - {} - {} - {}".format(app.scores[0], app.scores[1], app.scores[2], app.scores[3]))
+
+
+##### END MODE ^^^^^^^^
 
 ##### VVVVV PLAY MODE VVVVV
 
@@ -103,6 +115,7 @@ def playMode_timerFired(app) -> None:
             app.gameState = data
             app.hand = app.gameState[0][int(app.playerNumber) - 1]
             app.playerTurn = int(app.gameState[1]) 
+            
          
 
 def playMode_mouseMoved(app, event) -> None:
@@ -315,7 +328,16 @@ def playMode_mousePressed(app, event) -> None:
                         app.hand = app.gameState[0][int(app.playerNumber) - 1]
                         app.playerTurn = int(app.gameState[1])
 
-
+            # Check for a win after each play
+            if app.hand == []: #this player won
+                ClientSocket.sendall(dumps(['WE WON', app.playerNumber]))
+                data = loads(ClientSocket.recv(2048))
+                app.mode = 'endMode'
+                app.hand = []
+                app.playerTurn = 0
+                app.scores = data[1]
+                app.winner = data[2]
+                
 
 
 
@@ -334,6 +356,10 @@ def playMode_mousePressed(app, event) -> None:
 def playMode_timerFired(app) -> None:
     '''Update the game every half a second'''
 
+    # if app.gameState == ['game over']:
+    #     ClientSocket.sendall(dumps(['I need scores']))
+    #     data = (ClientSocket.recv(2048)) #### TODO: fix
+    #     app.mode = 'endMode' 
     app.time += 1
     if app.time % 5 == 0:
         ClientSocket.sendall(dumps(['update']))
@@ -341,8 +367,17 @@ def playMode_timerFired(app) -> None:
         if data != b'':
             data = loads(data)
             app.gameState = data
-            app.hand = app.gameState[0][int(app.playerNumber) - 1]
-            app.playerTurn = int(app.gameState[1])       
+            if data[0] != ['game over']:
+                print(app.gameState)
+                app.hand = app.gameState[0][int(app.playerNumber) - 1]
+                app.playerTurn = int(app.gameState[1])  
+            else:
+                app.hand = []
+                app.playerTurn = 0
+                app.scores = data[1]
+                app.winner = data[2]
+                app.mode = 'endMode'
+                    
 
 def playMode_redrawAll(app, canvas) -> None: 
     '''Redraw the board with the updated game.'''

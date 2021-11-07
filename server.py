@@ -11,12 +11,14 @@ from pickle import dumps, loads
 
 ##################################################^^^^^^^ Don't touch VVV
 connections = []
+winnerIndex = None
 threadCount = 0
 stack = 0
 stackCards = []
 gameState = []
 turn = 0
 consecutivePasses = 0
+teams = []
 typeOfPlay = None
 hands = []
 scores = [0, 0, 0, 0] # how many points
@@ -47,7 +49,6 @@ def startGame() -> list:
     global stackCards
     global consecutivePasses
     global typeOfPlay
-    global scores
     p1, p2, p3, p4 = [], [], [], []
     deal_seed = np.random.permutation(52)
     for i in range(13): 
@@ -82,10 +83,12 @@ def threaded_client(connection):
     global connections
     global consecutivePasses
     global gameState
+    global winnerIndex
     global stack
     global stackCards
     global hands
     global turn
+    global teams
     global scores
     global typeOfPlay
     connections.append(connection)
@@ -100,8 +103,14 @@ def threaded_client(connection):
         print(data)
         
         if data[0] == 'update':
-            reply = dumps(gameState) 
-            connection.sendall(reply)
+            if gameState == ['game over']:
+                reply = dumps([gameState, scores, winnerIndex+1]) 
+                print(reply)
+                connection.sendall(reply)
+            else:
+                reply = dumps(gameState) 
+                connection.sendall(reply)
+        
         
         elif data[0] == 'pass':
             consecutivePasses += 1
@@ -119,21 +128,60 @@ def threaded_client(connection):
             if turn == 0:
                 turn = 4
 
-            gameState = [hands, turn, stack, stackCards, consecutivePasses, typeOfPlay, scores] #Update for each new thing
+            gameState = [hands, turn, stack, stackCards, consecutivePasses, typeOfPlay] #Update for each new thing
             reply = dumps(gameState) 
             connection.sendall(reply)
 
         elif data[0] == "Start":
             print("ya")
-            gameState = startGame()
+            if gameState == []:
+                gameState = startGame()
+
+                #### Check everyone's hands for aces, assign them teams
+                for hand in gameState[0]: # loop through each players hands
+                    aces = 0 #count aces
+                    color = None #consider color
+                    for card in hand:
+                        if card[0] == 14: #ace
+                            aces += 1
+                            if color == None: #first ace, we care about color. if 2nd+, we won't use it later
+                                if card[1] in ['hearts', 'diamonds']:
+                                    color = 'red'
+                                else:
+                                    color = 'black'
+                            elif color in ['black', 'red']: # second ace
+                                color = 'solo'
+
+                    #looped through all cards, know color of ace (if only 1)
+                    teams.append([aces, color])
             reply = dumps(gameState) 
             connection.sendall(reply)
 
-        # elif data[0] in ["Start2", "Start3", "Start4"]:
-        #     print(gameState)
-        #     # time.sleep(1)
-        #     reply = dumps(gameState)
-        #     connection.sendall(reply)
+        elif data[0] == 'WE WON': #gotta update scores
+            gameState = ['game over'] #jerries game (need to have the update one do something when the gameState is "game over")
+            winnerIndex = data[1] - 1 #can properly index now
+
+            for i in range(4): #loop through 4 scores
+                aceScore = 5 - teams[i][0] # 5 - #aces  (teams has 4 lists, each list is [aces, color])
+
+                if teams[i][1] == 'solo': #on your own
+                    teamScore = 3
+                else: # part of a team, maybe
+                    teamScore = 4 
+                    for j in range(4):
+                        if teams[j][1] == teams[i][1]:
+                            teamScore -= 1
+                
+                # score points
+                if i == winnerIndex: # winner
+                    scores[i] += aceScore * teamScore
+                elif teams[i][1] != 'solo' and teams[i][1] == teams[winnerIndex][1]:      
+                    scores[i] += aceScore * teamScore     
+
+            reply = dumps([gameState, scores, winnerIndex+1]) 
+            connection.sendall(reply)
+                
+
         else:
             if data[0] == 'play':
                 print("we're making a play!")
@@ -152,7 +200,7 @@ def threaded_client(connection):
                     turn = 4
 
                 typeOfPlay = data[4]
-                gameState = [hands, turn, stack, stackCards, consecutivePasses, typeOfPlay, scores] #Update for each new thing
+                gameState = [hands, turn, stack, stackCards, consecutivePasses, typeOfPlay] #Update for each new thing
                 reply = dumps(gameState) 
                 connection.sendall(reply)
 
