@@ -31,8 +31,8 @@ class HazelnutsGame(TopLevelApp):
         app.cardBack = app.scaleImage(app.loadImage('cards/cardback.png'), 1/5)
         app.backX, app.backY = app.cardBack.size
 
-        #In order: start button, play cards button, pass button
-        app.buttonColors = ['orange', 'light green', 'tan']
+        #In order: start button, play cards button, pass button, replay button
+        app.buttonColors = ['orange', 'light green', 'tan', 'light green']
         app.toggle = [0 for i in range(13)]
         
         
@@ -93,12 +93,33 @@ def startScreenMode_redrawAll(app, canvas) -> None:
 
 #### END MODE VVVVVVVVV
 
+def endMode_mousePressed(app, event) -> None:
+    '''if replay button clicked, go to app.playMode and start a new game'''
+    if isInside(event.x, event.y, app.width*0.75, app.height*0.75, app.width//10, app.height//12):
+        ClientSocket.sendall(dumps(['Start']))
+        app.gameState = loads(ClientSocket.recv(2048))
+        app.hand = app.gameState[0][app.playerNumber - 1]
+        app.playerTurn = int(app.gameState[1])
+        #start  new game
+        app.mode = 'playMode'
+
+def endMode_mouseMoved(app, event) -> None:
+    '''if hovering over the replay button, change color'''
+    if isInside(event.x, event.y, app.width*0.75, app.height*0.75, app.width//10, app.height//12):
+        app.buttonColors[3] = 'green'
+    else:
+        app.buttonColors[3] = 'light green'
+    
+
 def endMode_redrawAll(app, canvas) -> None:
+    # show stats
     canvas.create_text(app.width//2, app.height//4, text = 'Round Over!', font = f'Times {min(app.height, app.width)//20}')
     canvas.create_text(app.width//2, app.height//2, text = 'Winner: Player {}!'.format(app.winner))
     canvas.create_text(app.width//2, app.height*3/4, text = "Scores: {} - {} - {} - {}".format(app.scores[0], app.scores[1], app.scores[2], app.scores[3]))
 
-
+    # replay button
+    drawButton(canvas, app.width*0.75, app.height*0.75, app.width//10, app.height//12, app.buttonColors[3], 2, 'green')
+    canvas.create_text(app.width*0.75, app.height*0.75, text = 'Play Again!', font = f'Times {min(app.height, app.width)//30}')
 ##### END MODE ^^^^^^^^
 
 ##### VVVVV PLAY MODE VVVVV
