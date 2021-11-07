@@ -2,9 +2,9 @@
 
 2. Run server.py
 
-2. Connect 
+2. Connect 4 players with client.py
 
-3. Player 1 starts game
+3. Play the game.
 
 4. Enjoy!
 
