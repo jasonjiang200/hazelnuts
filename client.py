@@ -154,6 +154,8 @@ def playMode_mouseMoved(app, event) -> None:
     else:
         app.buttonColors[2] = 'tan'
 
+
+
 def playMode_mousePressed(app, event) -> None:
     '''Where the game takes place; play cards'''
     # Toggles cards to be played
@@ -282,10 +284,10 @@ def playMode_mousePressed(app, event) -> None:
                         app.hand = app.gameState[0][int(app.playerNumber) - 1]
                         app.playerTurn = int(app.gameState[1])
 
-                elif ((cards[0][0]) == (cards[1][0] - 1) == (cards[2][0] - 2) == (cards[3][0] - 3) == (cards[4][0] - 4)) and (cards[4][0] != 16): # cant have 2 as part of the straight
-                    if cards[0][0] > app.gameState[2] and app.gameState[5] in [None, 'straight']:
+                elif ((cards[0][0]) == (cards[1][0] - 1) == (cards[2][0] - 2) == (cards[3][0] - 3) == (cards[4][0] - 4)) and (cards[-1][0] != 15): # cant have 2 as part of the straight
+                    if cards[0][0] > app.gameState[2] and app.gameState[5] in [None, '5_straight']:
                         # 5 length straight
-                        typeOfPlay = 'straight'
+                        typeOfPlay = '5_straight'
                         stack = cards[0][0] # can take from first card
                         play = ["play", cards, stack, app.playerNumber, typeOfPlay]
                         print(play)
@@ -296,10 +298,10 @@ def playMode_mousePressed(app, event) -> None:
                         app.playerTurn = int(app.gameState[1])
                         
             elif len(cards) == 6:
-                if (cards[0][0] == cards[1][0]) and (cards[2][0] == cards[3][0]) and (cards[4][0] == cards[5][0]) and (cards[0][0] + 2 == cards[2][0] + 1 == cards[4][0]) and (cards[4][0] != 16):
+                if (cards[0][0] == cards[1][0]) and (cards[2][0] == cards[3][0]) and (cards[4][0] == cards[5][0]) and (cards[0][0] == cards[2][0] - 1 == cards[4][0] - 2) and (cards[-1][0] != 15):
                     # pairs straight
-                    if cards[0][0] > app.gameState[2] and app.gameState[5] in [None, 'pairs_straight']:
-                        typeOfPlay = 'pairs_straight'
+                    if cards[0][0] > app.gameState[2] and app.gameState[5] in [None, '3_pairs_straight']:
+                        typeOfPlay = '3_pairs_straight'
                         stack = cards[0][0] # can take from first card
                         play = ["play", cards, stack, app.playerNumber, typeOfPlay]
                         print(play)
@@ -309,9 +311,9 @@ def playMode_mousePressed(app, event) -> None:
                         app.hand = app.gameState[0][int(app.playerNumber) - 1]
                         app.playerTurn = int(app.gameState[1])
                 
-                elif (cards[0][0] == cards[1][0] == cards[2][0]) and (cards[3][0] == cards[4][0] == cards[5][0]) and (cards[0][0] + 1 == cards[3][0]) and (cards[3][0] != 16):
-                    if cards[0][0] > app.gameState[2] and app.gameState[5] in [None, 'empty_airplane']:
-                        typeOfPlay = 'empty_airplane'
+                elif (cards[0][0] == cards[1][0] == cards[2][0]) and (cards[3][0] == cards[4][0] == cards[5][0]) and (cards[0][0] == cards[3][0] - 1) and (cards[-1][0] != 15):
+                    if cards[0][0] > app.gameState[2] and app.gameState[5] in [None, '2_empty_airplane']:
+                        typeOfPlay = '2_empty_airplane'
                         stack = cards[0][0] # can take from first card
                         play = ["play", cards, stack, app.playerNumber, typeOfPlay]
                         print(play)
@@ -321,10 +323,10 @@ def playMode_mousePressed(app, event) -> None:
                         app.hand = app.gameState[0][int(app.playerNumber) - 1]
                         app.playerTurn = int(app.gameState[1])
                 
-                elif ((cards[0][0]) == (cards[1][0] - 1) == (cards[2][0] - 2) == (cards[3][0] - 3) == (cards[4][0] - 4) == (cards[5][0] - 5)) and (cards[5][0] != 16): # cant have 2 as part of the straight
-                    if cards[0][0] > app.gameState[2] and app.gameState[5] in [None, 'straight']:
+                elif ((cards[0][0]) == (cards[1][0] - 1) == (cards[2][0] - 2) == (cards[3][0] - 3) == (cards[4][0] - 4) == (cards[5][0] - 5)) and (cards[-1][0] != 15): # cant have 2 as part of the straight
+                    if cards[0][0] > app.gameState[2] and app.gameState[5] in [None, '6_straight']:
                         # 6 length straight
-                        typeOfPlay = 'straight'
+                        typeOfPlay = '6_straight'
                         stack = cards[0][0] # can take from first card
                         play = ["play", cards, stack, app.playerNumber, typeOfPlay]
                         print(play)
@@ -336,10 +338,10 @@ def playMode_mousePressed(app, event) -> None:
 
             elif len(cards) == 7:
                 # only straights
-                if ((cards[0][0]) == (cards[1][0] - 1) == (cards[2][0] - 2) == (cards[3][0] - 3) == (cards[4][0] - 4) == (cards[5][0] - 5) == (cards[6][0] - 6)) and (cards[6][0] != 16): # cant have 2 as part of the straight
-                    if cards[0][0] > app.gameState[2] and app.gameState[5] in [None, 'straight']:
+                if ((cards[0][0]) == (cards[1][0] - 1) == (cards[2][0] - 2) == (cards[3][0] - 3) == (cards[4][0] - 4) == (cards[5][0] - 5) == (cards[6][0] - 6)) and (cards[-1][0] != 15): # cant have 2 as part of the straight
+                    if cards[0][0] > app.gameState[2] and app.gameState[5] in [None, '7_straight']:
                         # 7 length straight
-                        typeOfPlay = 'straight'
+                        typeOfPlay = '7_straight'
                         stack = cards[0][0] # can take from first card
                         play = ["play", cards, stack, app.playerNumber, typeOfPlay]
                         print(play)
@@ -348,6 +350,212 @@ def playMode_mousePressed(app, event) -> None:
                         app.gameState = loads(ClientSocket.recv(2048))
                         app.hand = app.gameState[0][int(app.playerNumber) - 1]
                         app.playerTurn = int(app.gameState[1])
+            
+            elif len(cards) == 8: #pair straight, straight, airplane with wings
+                if ((cards[0][0]) == (cards[1][0] - 1) == (cards[2][0] - 2) == (cards[3][0] - 3) == (cards[4][0] - 4) == (cards[5][0] - 5) == (cards[6][0] - 6) == (cards[7][0] - 7)) and (cards[-1][0] != 15): # cant have 2 as part of the straight
+                    if cards[0][0] > app.gameState[2] and app.gameState[5] in [None, '8_straight']:
+                        # 8 length straight
+                        typeOfPlay = '8_straight'
+                        stack = cards[0][0] # can take from first card
+                        play = ["play", cards, stack, app.playerNumber, typeOfPlay]
+                        print(play)
+                        ClientSocket.sendall(dumps(play))
+                        # code to update with what comes back
+                        app.gameState = loads(ClientSocket.recv(2048))
+                        app.hand = app.gameState[0][int(app.playerNumber) - 1]
+                        app.playerTurn = int(app.gameState[1])
+                
+                elif (cards[0][0] == cards[1][0]) and (cards[2][0] == cards[3][0]) and (cards[4][0] == cards[5][0]) and (cards[6][0] == cards[7][0]) and (cards[0][0] == cards[2][0] - 1 == cards[4][0] - 2 == cards[6][0] - 3) and (cards[-1][0] != 15):
+                    # pairs straight
+                    if cards[0][0] > app.gameState[2] and app.gameState[5] in [None, '4_pairs_straight']:
+                        typeOfPlay = '4_pairs_straight'
+                        stack = cards[0][0] # can take from first card
+                        play = ["play", cards, stack, app.playerNumber, typeOfPlay]
+                        print(play)
+                        ClientSocket.sendall(dumps(play))
+                        # code to update with what comes back
+                        app.gameState = loads(ClientSocket.recv(2048))
+                        app.hand = app.gameState[0][int(app.playerNumber) - 1]
+                        app.playerTurn = int(app.gameState[1])
+                
+                else: #must be airplane with wings, need manipulation
+                    # TODO: get a test of this, currently no clue if it works
+                    cardNumbers = []
+                    seenTriples, seenSingles = [], []
+                    for card in cards:
+                        cardNumbers.append(card[0])
+                    for num in cardNumbers:
+                        if (num not in seenTriples) and (num not in seenSingles): #haven't seen this before
+                            if cardNumbers.count(num) == 3:
+                                seenTriples.append(num)
+                            elif cardNumbers.count(num) == 1:
+                                seenSingles.append(num)
+                    if 15 not in seenTriples and abs(seenTriples[0] - seenTriples[1]) == 1:
+                        if app.gameState[5] in [None, '2_airplane_with_singles']:
+                            typeOfPlay = '2_airplane_with_singles'
+                            stack = min(seenTriples) # can take from smaller card in the triples
+                            play = ["play", cards, stack, app.playerNumber, typeOfPlay]
+                            print(play)
+                            ClientSocket.sendall(dumps(play))
+                            # code to update with what comes back
+                            app.gameState = loads(ClientSocket.recv(2048))
+                            app.hand = app.gameState[0][int(app.playerNumber) - 1]
+                            app.playerTurn = int(app.gameState[1])
+            
+            elif len(cards) == 9:
+                if ((cards[0][0]) == (cards[1][0] - 1) == (cards[2][0] - 2) == (cards[3][0] - 3) == (cards[4][0] - 4) == (cards[5][0] - 5) == (cards[6][0] - 6) == (cards[7][0] - 7) == (cards[8] - 8)) and (cards[-1][0] != 15): # cant have 2 as part of the straight 
+                    if cards[0][0] > app.gameState[2] and app.gameState[5] in [None, '9_straight']:
+                        # 9 length straight
+                        typeOfPlay = '9_straight'
+                        stack = cards[0][0] # can take from first card
+                        play = ["play", cards, stack, app.playerNumber, typeOfPlay]
+                        print(play)
+                        ClientSocket.sendall(dumps(play))
+                        # code to update with what comes back
+                        app.gameState = loads(ClientSocket.recv(2048))
+                        app.hand = app.gameState[0][int(app.playerNumber) - 1]
+                        app.playerTurn = int(app.gameState[1])
+                    
+                elif (cards[0][0] == cards[1][0] == cards[2][0]) and (cards[3][0] == cards[4][0] == cards[5][0] and (cards[6][0] == cards[7][0] == cards[8][0])) and (cards[0][0] == cards[3][0] - 1 == cards[6][0] - 2) and (cards[-1][0] != 15): #no 2 as top
+                    if cards[0][0] > app.gameState[2] and app.gameState[5] in [None, '3_empty_airplane']:
+                        typeOfPlay = '3_empty_airplane'
+                        stack = cards[0][0] # can take from first card
+                        play = ["play", cards, stack, app.playerNumber, typeOfPlay]
+                        print(play)
+                        ClientSocket.sendall(dumps(play))
+                        # code to update with what comes back
+                        app.gameState = loads(ClientSocket.recv(2048))
+                        app.hand = app.gameState[0][int(app.playerNumber) - 1]
+                        app.playerTurn = int(app.gameState[1])
+
+            elif len(cards) == 10: #TODO: fix up
+                if ((cards[0][0]) == (cards[1][0] - 1) == (cards[2][0] - 2) == (cards[3][0] - 3) == (cards[4][0] - 4) == (cards[5][0] - 5) == (cards[6][0] - 6) == (cards[7][0] - 7) == (cards[8][0] - 8) == (cards[9][0] - 9)) and (cards[-1][0] != 15): # cant have 2 as part of the straight
+                    if cards[0][0] > app.gameState[2] and app.gameState[5] in [None, '10_straight']:
+                        # 10 length straight
+                        typeOfPlay = '10_straight'
+                        stack = cards[0][0] # can take from first card
+                        play = ["play", cards, stack, app.playerNumber, typeOfPlay]
+                        print(play)
+                        ClientSocket.sendall(dumps(play))
+                        # code to update with what comes back
+                        app.gameState = loads(ClientSocket.recv(2048))
+                        app.hand = app.gameState[0][int(app.playerNumber) - 1]
+                        app.playerTurn = int(app.gameState[1])
+                
+                elif (cards[0][0] == cards[1][0]) and (cards[2][0] == cards[3][0]) and (cards[4][0] == cards[5][0]) and (cards[6][0] == cards[7][0]) and (cards[8][0] == cards[9][0]) and (cards[0][0] == cards[2][0] - 1 == cards[4][0] - 2 == cards[6][0] - 3 == cards[8] - 4) and (cards[-1][0] != 15):
+                    # pairs straight
+                    if cards[0][0] > app.gameState[2] and app.gameState[5] in [None, '5_pairs_straight']:
+                        typeOfPlay = '5_pairs_straight'
+                        stack = cards[0][0] # can take from first card
+                        play = ["play", cards, stack, app.playerNumber, typeOfPlay]
+                        print(play)
+                        ClientSocket.sendall(dumps(play))
+                        # code to update with what comes back
+                        app.gameState = loads(ClientSocket.recv(2048))
+                        app.hand = app.gameState[0][int(app.playerNumber) - 1]
+                        app.playerTurn = int(app.gameState[1])
+                
+                else: #must be airplane with thicc wings, need manipulation
+                    # TODO: get a test of this, currently no clue if it works
+                    cardNumbers = []
+                    seenTriples, seenDoubles = [], []
+                    for card in cards:
+                        cardNumbers.append(card[0])
+                    for num in cardNumbers:
+                        if (num not in seenTriples) and (num not in seenDoubles): #haven't seen this before
+                            if cardNumbers.count(num) == 3:
+                                seenTriples.append(num)
+                            elif cardNumbers.count(num) == 2:
+                                seenDoubles.append(num)
+                    if 15 not in seenTriples and abs(seenTriples[0] - seenTriples[1]) == 1:
+                        if app.gameState[5] in [None, '2_airplane_with_pairs']:
+                            typeOfPlay = '2_airplane_with_pairs'
+                            stack = min(seenTriples) # can take from smaller card in the triples
+                            play = ["play", cards, stack, app.playerNumber, typeOfPlay]
+                            print(play)
+                            ClientSocket.sendall(dumps(play))
+                            # code to update with what comes back
+                            app.gameState = loads(ClientSocket.recv(2048))
+                            app.hand = app.gameState[0][int(app.playerNumber) - 1]
+                            app.playerTurn = int(app.gameState[1])
+
+            elif len(cards) == 11: #only straights
+                if ((cards[0][0]) == (cards[1][0] - 1) == (cards[2][0] - 2) == (cards[3][0] - 3) == (cards[4][0] - 4) == (cards[5][0] - 5) == (cards[6][0] - 6) == (cards[7][0] - 7) == (cards[8][0] - 8) == (cards[9][0] - 9) == (cards[10][0] - 10)) and (cards[-1][0] != 15): # cant have 2 as part of the straight
+                    if cards[0][0] > app.gameState[2] and app.gameState[5] in [None, '11_straight']:
+                            # 11 length straight
+                            typeOfPlay = '11_straight'
+                            stack = cards[0][0] # can take from first card
+                            play = ["play", cards, stack, app.playerNumber, typeOfPlay]
+                            print(play)
+                            ClientSocket.sendall(dumps(play))
+                            # code to update with what comes back
+                            app.gameState = loads(ClientSocket.recv(2048))
+                            app.hand = app.gameState[0][int(app.playerNumber) - 1]
+                            app.playerTurn = int(app.gameState[1])
+            
+            elif len(cards) == 12: #straight, 6 pairs, 3 airplane with singles, 4 empty airplane
+                if ((cards[0][0]) == (cards[1][0] - 1) == (cards[2][0] - 2) == (cards[3][0] - 3) == (cards[4][0] - 4) == (cards[5][0] - 5) == (cards[6][0] - 6) == (cards[7][0] - 7) == (cards[8][0] - 8) == (cards[9][0] - 9) == (cards[10][0] - 10) == (cards[11][0] - 11)) and (cards[-1][0] != 15): # cant have 2 as part of the straight
+                    if cards[0][0] > app.gameState[2] and app.gameState[5] in [None, '12_straight']:
+                            # 12 length straight
+                            typeOfPlay = '12_straight'
+                            stack = cards[0][0] # can take from first card
+                            play = ["play", cards, stack, app.playerNumber, typeOfPlay]
+                            print(play)
+                            ClientSocket.sendall(dumps(play))
+                            # code to update with what comes back
+                            app.gameState = loads(ClientSocket.recv(2048))
+                            app.hand = app.gameState[0][int(app.playerNumber) - 1]
+                            app.playerTurn = int(app.gameState[1])
+
+                elif (cards[0][0] == cards[1][0]) and (cards[2][0] == cards[3][0]) and (cards[4][0] == cards[5][0]) and (cards[6][0] == cards[7][0]) and (cards[8][0] == cards[9][0]) and (cards[10][0] == cards[11][0]) and (cards[0][0] == cards[2][0] - 1 == cards[4][0] - 2 == cards[6][0] - 3 == cards[8] - 4 == cards[10] - 5) and (cards[-1][0] != 15):
+                    # 6 pairs straight
+                    if cards[0][0] > app.gameState[2] and app.gameState[5] in [None, '6_pairs_straight']:
+                        typeOfPlay = '6_pairs_straight'
+                        stack = cards[0][0] # can take from first card
+                        play = ["play", cards, stack, app.playerNumber, typeOfPlay]
+                        print(play)
+                        ClientSocket.sendall(dumps(play))
+                        # code to update with what comes back
+                        app.gameState = loads(ClientSocket.recv(2048))
+                        app.hand = app.gameState[0][int(app.playerNumber) - 1]
+                        app.playerTurn = int(app.gameState[1])
+                
+                elif (cards[0][0] == cards[1][0] == cards[2][0]) and (cards[3][0] == cards[4][0] == cards[5][0] and (cards[6][0] == cards[7][0] == cards[8][0]) and (cards[9][0] == cards[10][0] == cards[11][0])) and (cards[0][0] == cards[3][0] - 1 == cards[6][0] - 2 == cards[9][0] - 3) and (cards[-1][0] != 15): #no 2 as top
+                    if cards[0][0] > app.gameState[2] and app.gameState[5] in [None, '4_empty_airplane']:
+                        typeOfPlay = '4_empty_airplane'
+                        stack = cards[0][0] # can take from first card
+                        play = ["play", cards, stack, app.playerNumber, typeOfPlay]
+                        print(play)
+                        ClientSocket.sendall(dumps(play))
+                        # code to update with what comes back
+                        app.gameState = loads(ClientSocket.recv(2048))
+                        app.hand = app.gameState[0][int(app.playerNumber) - 1]
+                        app.playerTurn = int(app.gameState[1])
+                else: #must be airplane with wings, need manipulation
+                    # TODO: get a test of this, currently no clue if it works
+                    cardNumbers = []
+                    seenTriples, seenSingles = [], []
+                    for card in cards:
+                        cardNumbers.append(card[0])
+                    for num in cardNumbers:
+                        if (num not in seenTriples) and (num not in seenSingles): #haven't seen this before
+                            if cardNumbers.count(num) == 3:
+                                seenTriples.append(num)
+                            elif cardNumbers.count(num) == 1:
+                                seenSingles.append(num)
+                    seenTriples = sorted(seenTriples, key=lambda x: x[0])
+                    if 15 not in seenTriples and (seenTriples[0] == seenTriples[1] - 1 == seenTriples[2] - 2):
+                        if app.gameState[5] in [None, '3_airplane_with_singles']:
+                            typeOfPlay = '3_airplane_with_singles'
+                            stack = min(seenTriples) # can take from smaller card in the triples
+                            play = ["play", cards, stack, app.playerNumber, typeOfPlay]
+                            print(play)
+                            ClientSocket.sendall(dumps(play))
+                            # code to update with what comes back
+                            app.gameState = loads(ClientSocket.recv(2048))
+                            app.hand = app.gameState[0][int(app.playerNumber) - 1]
+                            app.playerTurn = int(app.gameState[1])
+                
 
             # Check for a win after each play
             if app.hand == []: #this player won
