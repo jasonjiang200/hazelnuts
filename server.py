@@ -28,8 +28,13 @@ for suit in ['clubs', 'diamonds', 'hearts', 'spades']:
         full_deck.append([number, suit])
 ######################## Sockets VVV
 ServerSocket = socket.socket()
+
+# pick one
 host = socket.gethostbyname(socket.gethostname())
-port = 1233
+# host = '10.74.6.24'
+print(host)
+
+port = 14641
 
 try:
     ServerSocket.bind((host, port))

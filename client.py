@@ -5,8 +5,13 @@ from pickle import dumps, loads
 
 
 ClientSocket = socket.socket()
+
+# pick one
 host = socket.gethostbyname(socket.gethostname())
-port = 1233
+# host = '10.74.6.24'
+print(host)
+
+port = 14641
 
 print('Waiting for connection')
 try:
@@ -630,7 +635,7 @@ def playMode_redrawAll(app, canvas) -> None:
         canvas.create_rectangle(app.width//20*(i+1)-app.cardx//2, 
                                 app.height*9//10-app.cardy//2-app.toggle[i]*app.height//40, 
                                 app.width//20*(i+1)+app.cardx//2, 
-                                app.height*9//10+app.cardy//2-app.toggle[i]*app.height//40, width = 2) 
+                                app.height*9//10+app.cardy//2-app.toggle[i]*app.height//40, width = 1) 
 
     #Play button
     drawButton(canvas, app.width*0.9, app.height*4//5, app.width//10, app.height//12, app.buttonColors[1], 2, 'green')
@@ -653,7 +658,7 @@ def playMode_redrawAll(app, canvas) -> None:
         canvas.create_rectangle(app.width//20*(i+3)+app.cardx*0.5, 
                                 app.height*0.5-app.cardy//2, 
                                 app.width//20*(i+3)+app.cardx*1.5, 
-                                app.height*0.5+app.cardy//2, width = 2)
+                                app.height*0.5+app.cardy//2, width = 1)
     # Show other player's card totals
     canvas.create_image(app.backX, app.height//2, image=ImageTk.PhotoImage(app.cardBack))
     canvas.create_text(app.backX, app.height//2, text = len(app.gameState[0][(app.playerNumber) % 4]), font = f'Arial {min(app.height, app.width)//20}', fill = "#00FF00")
@@ -664,7 +669,17 @@ def playMode_redrawAll(app, canvas) -> None:
     canvas.create_image(app.width - app.backX, app.height//2, image=ImageTk.PhotoImage(app.cardBack))
     canvas.create_text(app.width - app.backX, app.height//2, text = len(app.gameState[0][(app.playerNumber + 2) % 4]), font = f'Arial {min(app.height, app.width)//20}', fill = '#00FF00')
 
-    #TODO: show other black aces
+    # show a square below the person whose turn it is
+    # turn is 1, 2, 3 or 4
+    # app.playerNumber is 1, 2, 3, or 4
+    chip = (app.gameState[1] - app.playerNumber) % 4
+    if chip == 1: #player is on left
+        canvas.create_rectangle(2*app.backX-10, app.height//2-10, 2*app.backX+10, app.height//2+10, fill = 'red' )
+    elif chip == 2:
+        canvas.create_rectangle(app.width//2-10, (1.5*app.backY + 10), app.width//2+10, (1.5*app.backY +30), fill = 'red' )
+    elif chip == 3:
+        canvas.create_rectangle(app.width-(2*app.backX-10), app.height//2-10, app.width-(2*app.backX+10), app.height//2+10, fill = 'red' )
+
 
 ###############################################################
 
